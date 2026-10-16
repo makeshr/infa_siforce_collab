@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDMC Schema Impact Analyzer - Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #F7F9FC;
+            color: #1a1a2e;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #0176D3 0%, #032D60 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .app-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .app-header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .analyzer-container {
+            max-width: 1600px;
+            margin: 30px auto;
+            padding: 0 40px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+        }
+
+        .main-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .change-input {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .change-input h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #1a1a2e;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #6B7280;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #E5E9EF;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: #0176D3;
+            box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.1);
+        }
+
+        .analyze-btn {
+            width: 100%;
+            padding: 12px;
+            background: #0176D3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .analyze-btn:hover {
+            background: #0159A8;
+        }
+
+        .graph-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+
+        .graph-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .graph-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .graph-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 8px 14px;
+            border: 1px solid #E5E9EF;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: #F9FAFB;
+        }
+
+        .graph-canvas {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #E5E9EF;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+            background: #FAFBFC;
+        }
+
+        .node {
+            position: absolute;
+            padding: 12px 16px;
+            border-radius: 6px;
+            border: 2px solid;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 140px;
+            text-align: center;
+            font-size: 13px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .node:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        .node-source {
+            border-color: #0176D3;
+            background: #E8F4FF;
+        }
+
+        .node-changed {
+            border-color: #F59E0B;
+            background: #FEF3C7;
+            font-weight: 600;
+        }
+
+        .node-breaking {
+            border-color: #DC2626;
+            background: #FEE2E2;
+        }
+
+        .node-warning {
+            border-color: #F59E0B;
+            background: #FFF7ED;
+        }
+
+        .node-ok {
+            border-color: #10B981;
+            background: #ECFDF5;
+        }
+
+        .node-icon {
+            margin-bottom: 4px;
+        }
+
+        .node-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .node-type {
+            font-size: 11px;
+            color: #6B7280;
+        }
+
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            transform-origin: 0 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .connection-breaking {
+            background: #DC2626;
+        }
+
+        .connection-warning {
+            background: #F59E0B;
+        }
+
+        .connection-ok {
+            background: #10B981;
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .impact-summary {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .impact-summary h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #1a1a2e;
+        }
+
+        .impact-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #F3F4F6;
+        }
+
+        .impact-stat:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .stat-breaking {
+            color: #DC2626;
+        }
+
+        .stat-warning {
+            color: #F59E0B;
+        }
+
+        .stat-ok {
+            color: #10B981;
+        }
+
+        .affected-list {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .affected-list h3 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: #1a1a2e;
+        }
+
+        .affected-item {
+            padding: 12px;
+            border-left: 4px solid;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .affected-item:hover {
+            transform: translateX(4px);
+        }
+
+        .affected-item.breaking {
+            background: #FEE2E2;
+            border-color: #DC2626;
+        }
+
+        .affected-item.warning {
+            background: #FFF7ED;
+            border-color: #F59E0B;
+        }
+
+        .affected-item.ok {
+            background: #ECFDF5;
+            border-color: #10B981;
+        }
+
+        .affected-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .affected-reason {
+            font-size: 12px;
+            color: #6B7280;
+            margin-bottom: 6px;
+        }
+
+        .affected-criticality {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .criticality-high {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+
+        .criticality-medium {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .criticality-low {
+            background: #E0E7FF;
+            color: #3730A3;
+        }
+
+        .legend {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .legend-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #6B7280;
+            text-transform: uppercase;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+
+        @media (max-width: 1200px) {
+            .analyzer-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <h1>🔍 Schema Impact Analyzer</h1>
+        <p>Analyze downstream impact before deploying schema changes — prevents 35% of production incidents</p>
+    </div>
+
+    <div class="analyzer-container">
+        <div class="main-panel">
+            <div class="change-input">
+                <h2>Proposed Schema Change</h2>
+                <div class="input-group">
+                    <label>Database / Schema</label>
+                    <select id="database">
+                        <option>Snowflake > SALES_DB > analytics</option>
+                        <option>Snowflake > FINANCE_DB > warehouse</option>
+                        <option>PostgreSQL > CRM_DB > master</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Table Name</label>
+                    <input type="text" id="tableName" value="customer_revenue_monthly" placeholder="Enter table name">
+                </div>
+                <div class="input-group">
+                    <label>Change Type</label>
+                    <select id="changeType">
+                        <option>Drop Column</option>
+                        <option>Rename Column</option>
+                        <option>Change Data Type</option>
+                        <option>Add NOT NULL Constraint</option>
+                        <option>Drop Table</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Column Name</label>
+                    <input type="text" id="columnName" value="region" placeholder="Enter column name">
+                </div>
+                <button class="analyze-btn" onclick="analyzeImpact()">🔍 Analyze Impact</button>
+            </div>
+
+            <div class="graph-panel">
+                <div class="graph-header">
+                    <div class="graph-title">Impact Lineage Graph</div>
+                    <div class="graph-controls">
+                        <button class="control-btn">🔍 Zoom In</button>
+                        <button class="control-btn">🔎 Zoom Out</button>
+                        <button class="control-btn">📷 Export</button>
+                    </div>
+                </div>
+                <div class="graph-canvas" id="graphCanvas">
+                    <!-- Nodes and connections will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="side-panel">
+            <div class="impact-summary">
+                <h3>Impact Summary</h3>
+                <div class="impact-stat">
+                    <span class="stat-label">Breaking Changes</span>
+                    <span class="stat-value stat-breaking">3</span>
+                </div>
+                <div class="impact-stat">
+                    <span class="stat-label">Warnings</span>
+                    <span class="stat-value stat-warning">2</span>
+                </div>
+                <div class="impact-stat">
+                    <span class="stat-label">Safe Changes</span>
+                    <span class="stat-value stat-ok">7</span>
+                </div>
+                <div class="impact-stat">
+                    <span class="stat-label">Total Affected</span>
+                    <span class="stat-value">12</span>
+                </div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-title">Legend</div>
+                <div class="legend-item">
+                    <div class="legend-color" style="border-color: #F59E0B; background: #FEF3C7;"></div>
+                    <span>Changed Table</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="border-color: #DC2626; background: #FEE2E2;"></div>
+                    <span>Breaking Change</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="border-color: #F59E0B; background: #FFF7ED;"></div>
+                    <span>Warning</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="border-color: #10B981; background: #ECFDF5;"></div>
+                    <span>Safe</span>
+                </div>
+            </div>
+
+            <div class="affected-list">
+                <h3>Affected Assets (12)</h3>
+
+                <div class="affected-item breaking" onclick="alert('Details for sales_dashboard')">
+                    <div class="affected-name">🔴 sales_dashboard</div>
+                    <div class="affected-reason">Tableau dashboard uses dropped column 'region' in filter</div>
+                    <span class="affected-criticality criticality-high">HIGH CRITICALITY</span>
+                </div>
+
+                <div class="affected-item breaking" onclick="alert('Details for regional_sales_mapping')">
+                    <div class="affected-name">🔴 regional_sales_mapping</div>
+                    <div class="affected-reason">DI mapping selects 'region' column — will fail</div>
+                    <span class="affected-criticality criticality-high">HIGH CRITICALITY</span>
+                </div>
+
+                <div class="affected-item breaking" onclick="alert('Details for revenue_by_region_report')">
+                    <div class="affected-name">🔴 revenue_by_region_report</div>
+                    <div class="affected-reason">Downstream report groups by 'region'</div>
+                    <span class="affected-criticality criticality-high">HIGH CRITICALITY</span>
+                </div>
+
+                <div class="affected-item warning" onclick="alert('Details for customer_analytics')">
+                    <div class="affected-name">⚠️ customer_analytics</div>
+                    <div class="affected-reason">Uses 'region' but has fallback logic</div>
+                    <span class="affected-criticality criticality-medium">MEDIUM CRITICALITY</span>
+                </div>
+
+                <div class="affected-item warning" onclick="alert('Details for dq_region_validation')">
+                    <div class="affected-name">⚠️ dq_region_validation</div>
+                    <div class="affected-reason">DQ rule validates 'region' — will skip validation</div>
+                    <span class="affected-criticality criticality-medium">MEDIUM CRITICALITY</span>
+                </div>
+
+                <div class="affected-item ok" onclick="alert('Details for customer_master_sync')">
+                    <div class="affected-name">✅ customer_master_sync</div>
+                    <div class="affected-reason">Reads all columns via SELECT * — will continue to work</div>
+                    <span class="affected-criticality criticality-low">LOW CRITICALITY</span>
+                </div>
+
+                <div class="affected-item ok" onclick="alert('Details for revenue_total_pipeline')">
+                    <div class="affected-name">✅ revenue_total_pipeline</div>
+                    <div class="affected-reason">Does not use 'region' column</div>
+                    <span class="affected-criticality criticality-low">LOW CRITICALITY</span>
+                </div>
+
+                <div class="affected-item ok" onclick="alert('Details for monthly_aggregate')">
+                    <div class="affected-name">✅ monthly_aggregate</div>
+                    <div class="affected-reason">Does not use 'region' column</div>
+                    <span class="affected-criticality criticality-low">LOW CRITICALITY</span>
+                </div>
+
+                <div class="affected-item ok" onclick="alert('Details for finance_report')">
+                    <div class="affected-name">✅ finance_report</div>
+                    <div class="affected-reason">Aggregates at customer level only</div>
+                    <span class="affected-criticality criticality-low">LOW CRITICALITY</span>
+                </div>
+
+                <div class="affected-item ok" onclick="alert('Details for customer_count')">
+                    <div class="affected-name">✅ customer_count</div>
+                    <div class="affected-reason">Counts rows, no column dependencies</div>
+                    <span class="affected-criticality criticality-low">LOW CRITICALITY</span>
+                </div>
+
+                <div class="affected-item ok" onclick="alert('Details for revenue_trend')">
+                    <div class="affected-name">✅ revenue_trend</div>
+                    <div class="affected-reason">Time series analysis, region not used</div>
+                    <span class="affected-criticality criticality-low">LOW CRITICALITY</span>
+                </div>
+
+                <div class="affected-item ok" onclick="alert('Details for customer_segment')">
+                    <div class="affected-name">✅ customer_segment</div>
+                    <div class="affected-reason">Uses customer_id and revenue only</div>
+                    <span class="affected-criticality criticality-low">LOW CRITICALITY</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function analyzeImpact() {
+            // Mock implementation - in production, this would call IDMC lineage APIs
+            alert('Analyzing impact...\n\nIn production, this would:\n1. Call CDGC Lineage API to trace downstream consumers\n2. Analyze DI mapping logic for column dependencies\n3. Check DQ rules that reference the column\n4. Scan Tableau/PowerBI for dashboard usage\n5. Estimate criticality based on usage patterns\n\nResult: 3 breaking changes, 2 warnings, 7 safe assets');
+
+            renderGraph();
+        }
+
+        function renderGraph() {
+            const canvas = document.getElementById('graphCanvas');
+            canvas.innerHTML = '';
+
+            // Define node positions
+            const nodes = [
+                { id: 'source', name: 'Salesforce\nOpportunities', type: 'Source', class: 'node-source', x: 50, y: 250 },
+                { id: 'changed', name: 'customer_revenue\n_monthly', type: 'Table (Changed)', class: 'node-changed', x: 250, y: 250 },
+                { id: 'breaking1', name: 'sales_dashboard', type: 'Tableau', class: 'node-breaking', x: 500, y: 50 },
+                { id: 'breaking2', name: 'regional_sales\n_mapping', type: 'DI Mapping', class: 'node-breaking', x: 500, y: 150 },
+                { id: 'breaking3', name: 'revenue_by\n_region_report', type: 'Report', class: 'node-breaking', x: 500, y: 250 },
+                { id: 'warning1', name: 'customer\n_analytics', type: 'Pipeline', class: 'node-warning', x: 500, y: 350 },
+                { id: 'warning2', name: 'dq_region\n_validation', type: 'DQ Rule', class: 'node-warning', x: 500, y: 450 },
+                { id: 'ok1', name: 'revenue_total\n_pipeline', type: 'Pipeline', class: 'node-ok', x: 750, y: 100 },
+                { id: 'ok2', name: 'monthly\n_aggregate', type: 'Aggregate', class: 'node-ok', x: 750, y: 200 },
+                { id: 'ok3', name: 'finance\n_report', type: 'Report', class: 'node-ok', x: 750, y: 300 }
+            ];
+
+            const connections = [
+                { from: 'source', to: 'changed', class: 'connection-ok' },
+                { from: 'changed', to: 'breaking1', class: 'connection-breaking' },
+                { from: 'changed', to: 'breaking2', class: 'connection-breaking' },
+                { from: 'changed', to: 'breaking3', class: 'connection-breaking' },
+                { from: 'changed', to: 'warning1', class: 'connection-warning' },
+                { from: 'changed', to: 'warning2', class: 'connection-warning' },
+                { from: 'breaking2', to: 'ok1', class: 'connection-ok' },
+                { from: 'breaking2', to: 'ok2', class: 'connection-ok' },
+                { from: 'breaking3', to: 'ok3', class: 'connection-ok' }
+            ];
+
+            // Draw connections
+            connections.forEach(conn => {
+                const fromNode = nodes.find(n => n.id === conn.from);
+                const toNode = nodes.find(n => n.id === conn.to);
+
+                const line = document.createElement('div');
+                line.className = `connection-line ${conn.class}`;
+
+                const dx = toNode.x - fromNode.x;
+                const dy = toNode.y - fromNode.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+                line.style.width = `${length}px`;
+                line.style.left = `${fromNode.x + 70}px`;
+                line.style.top = `${fromNode.y + 20}px`;
+                line.style.transform = `rotate(${angle}deg)`;
+
+                canvas.appendChild(line);
+            });
+
+            // Draw nodes
+            nodes.forEach(node => {
+                const nodeDiv = document.createElement('div');
+                nodeDiv.className = `node ${node.class}`;
+                nodeDiv.style.left = `${node.x}px`;
+                nodeDiv.style.top = `${node.y}px`;
+
+                const icon = node.class === 'node-source' ? '📊' :
+                            node.class === 'node-changed' ? '⚠️' :
+                            node.class === 'node-breaking' ? '🔴' :
+                            node.class === 'node-warning' ? '⚠️' : '✅';
+
+                nodeDiv.innerHTML = `
+                    <div class="node-icon">${icon}</div>
+                    <div class="node-name">${node.name}</div>
+                    <div class="node-type">${node.type}</div>
+                `;
+
+                nodeDiv.onclick = () => {
+                    alert(`${node.name}\n\nType: ${node.type}\nClick for detailed impact analysis`);
+                };
+
+                canvas.appendChild(nodeDiv);
+            });
+        }
+
+        // Initial render
+        renderGraph();
+    </script>
+</body>
+</html>

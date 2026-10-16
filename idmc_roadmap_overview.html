@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informatica for SIforce Roadmap (WIP)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color: #1a1a2e;
+            padding: 40px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #0176D3;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            color: #0176D3;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: #6B7280;
+        }
+
+        .roadmap-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .roadmap-table th {
+            background: #0176D3;
+            color: white;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .roadmap-table th:first-child {
+            width: 120px;
+        }
+
+        .roadmap-table td {
+            padding: 20px 16px;
+            border: 1px solid #E5E9EF;
+            vertical-align: top;
+        }
+
+        .phase-label {
+            font-weight: bold;
+            color: #0176D3;
+            font-size: 16px;
+        }
+
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .item-list li {
+            padding: 6px 0;
+            font-size: 13px;
+            color: #374151;
+            line-height: 1.5;
+        }
+
+        .item-list li::before {
+            content: "•";
+            color: #0176D3;
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: -1em;
+        }
+
+        .item-list li {
+            margin-left: 1em;
+        }
+
+        .count {
+            display: inline-block;
+            background: #E0E7FF;
+            color: #3730A3;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .empty-cell {
+            color: #9CA3AF;
+            font-style: italic;
+            font-size: 13px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 30px;
+            background: #F7F9FC;
+            border-radius: 8px;
+        }
+
+        .interactive-link {
+            display: inline-block;
+            background: #0176D3;
+            color: white;
+            padding: 16px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(1, 118, 211, 0.3);
+        }
+
+        .interactive-link:hover {
+            background: #014486;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(1, 118, 211, 0.4);
+        }
+
+        .footer p {
+            color: #6B7280;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            font-size: 13px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #0176D3;
+        }
+
+        @media print {
+            body {
+                padding: 20px;
+            }
+            .footer {
+                page-break-before: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Informatica for SIforce Roadmap (WIP)</h1>
+            <p>Phased delivery of skills, apps, integrations, agents, and technical foundation</p>
+        </div>
+
+        <table class="roadmap-table">
+            <thead>
+                <tr>
+                    <th>Phase</th>
+                    <th>Skills</th>
+                    <th>Apps</th>
+                    <th>First-Party Integrations</th>
+                    <th>Agents</th>
+                    <th>Headless Native Services</th>
+                    <th>Technical Foundation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Phase 1 -->
+                <tr>
+                    <td>
+                        <div class="phase-label">Phase 1</div>
+                        <div style="font-size: 12px; color: #6B7280; margin-top: 4px;">(Oct-Apr)</div>
+                    </td>
+                    <td>
+                        <ul class="item-list">
+                            <li>Discover and search assets</li>
+                            <li>Enrich catalog metadata</li>
+                            <li>Trace lineage and impact</li>
+                            <li>Document data assets</li>
+                            <li>Manage connections</li>
+                            <li>Profile and assess data</li>
+                            <li>Build quality rules</li>
+                            <li>Search master data</li>
+                            <li>Monitor job execution</li>
+                        </ul>
+                        <span class="count">9 skills</span>
+                    </td>
+                    <td>
+                        <ul class="item-list">
+                            <li>Discover and search assets</li>
+                            <li>Trace lineage and impact</li>
+                            <li>Profile and assess data</li>
+                            <li>Search master data</li>
+                            <li>Monitor job execution</li>
+                        </ul>
+                        <span class="count">5 apps</span>
+                    </td>
+                    <td>
+                        <ul class="item-list">
+                            <li>Snowflake MKPLC Remote MCP</li>
+                            <li>AWS QuickSight</li>
+                            <li>AWS Kiro</li>
+                            <li>Microsoft Copilot Studio</li>
+                        </ul>
+                        <span class="count">4 integrations</span>
+                    </td>
+                    <td>
+                        <ul class="item-list">
+                            <li>Data Integration Agent</li>
+                            <li>Master Data Management Agent</li>
+                        </ul>
+                        <span class="count">2 agents</span>
+                    </td>
+                    <td>
+                        <ul class="item-list">
+                            <li>Connectivity as a Service</li>
+                            <li>Matching as a Service</li>
+                            <li>Address Validation as a Service</li>
+                        </ul>
+                        <span class="count">3 services</span>
+                    </td>
+                    <td>
+                        <ul class="item-list">
+                            <li>Meta MCP Server</li>
+                            <li>Eval Framework</li>
+                            <li>Dynamic Client Registration</li>
+                        </ul>
+                        <span class="count">3 capabilities</span>
+                    </td>
+                </tr>
+
+                <!-- Phase 2 -->
+                <tr>
+                    <td>
+                        <div class="phase-label">Phase 2</div>
+                        <div style="font-size: 12px; color: #6B7280; margin-top: 4px;">(Apr-July)</div>
+                    </td>
+                    <td>
+                        <ul class="item-list">
+                            <li>Manage data access</li>
+                            <li>Cleanse and standardize data</li>
+                            <li>Classify sensitive data</li>
+                            <li>Configure MDM agents</li>
+                            <li>Apply masking policies</li>
+                            <li>Generate mappings</li>
+                            <li>Build ingestion pipelines</li>
+                            <li>Orchestrate workflows</li>
+                            <li>Steward golden records</li>
+                            <li>Optimize pipeline performance</li>
+                            <li>Modernize legacy pipelines</li>
+                        </ul>
+                        <span class="count">11 skills</span>
+                    </td>
+                    <td>
+                        <ul class="item-list">
+                            <li>Steward golden records</li>
+                        </ul>
+                        <span class="count">1 app</span>
+                    </td>
+                    <td>
+                        <ul class="item-list">
+                            <li>OpenAI / Codex</li>
+                        </ul>
+                        <span class="count">1 integration</span>
+                    </td>
+                    <td>
+                        <div class="empty-cell">TBD</div>
+                    </td>
+                    <td>
+                        <ul class="item-list">
+                            <li>Classification as a Service</li>
+                            <li>Profiling as a Service</li>
+                        </ul>
+                        <span class="count">2 services</span>
+                    </td>
+                    <td>
+                        <div class="empty-cell">—</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="footer">
+            <p>👆 See detailed examples of how each skill works</p>
+            <a href="idmc_skills_interactive.html" class="interactive-link">
+                🚀 Explore Interactive Skills Catalog
+            </a>
+        </div>
+    </div>
+</body>
+</html>

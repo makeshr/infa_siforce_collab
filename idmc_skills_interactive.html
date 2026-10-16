@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDMC Skills: Interactive Showcase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #ffffff;
+            color: #1a1a2e;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0176D3 0%, #014486 100%);
+            color: white;
+            padding: 60px 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+
+        .skill-tile {
+            background: white;
+            border: 2px solid #E5E9EF;
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .skill-tile:hover {
+            border-color: #0176D3;
+            box-shadow: 0 8px 24px rgba(1, 118, 211, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .skill-tile.expanded {
+            grid-column: span 2;
+            border-color: #0176D3;
+            box-shadow: 0 12px 32px rgba(1, 118, 211, 0.2);
+        }
+
+        .skill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .skill-number {
+            font-size: 14px;
+            color: #0176D3;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .skill-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1a1a2e;
+            margin-bottom: 8px;
+        }
+
+        .skill-type {
+            display: inline-block;
+            background: #0176D3;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .skill-type.mcp {
+            background: #3EB1C8;
+        }
+
+        .skill-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .skill-status.exists {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .skill-status.planned {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .skill-status.partial {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .skill-status.new {
+            background: #E0E7FF;
+            color: #3730A3;
+        }
+
+        .skill-description {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 16px;
+        }
+
+        .skill-details {
+            display: none;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 2px solid #E5E9EF;
+        }
+
+        .skill-tile.expanded .skill-details {
+            display: block;
+        }
+
+        .example-section {
+            margin-bottom: 20px;
+        }
+
+        .prompt-box {
+            background: #F7F9FC;
+            border-left: 4px solid #0176D3;
+            padding: 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+
+        .prompt-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #0176D3;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .prompt-text {
+            font-size: 16px;
+            color: #1a1a2e;
+            font-style: italic;
+        }
+
+        .output-box {
+            background: #ffffff;
+            border: 2px solid #E5E9EF;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .output-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #0176D3;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .output-content {
+            font-size: 14px;
+            color: #374151;
+            line-height: 1.7;
+        }
+
+        .output-content strong {
+            color: #0176D3;
+            display: block;
+            margin-top: 12px;
+            margin-bottom: 4px;
+        }
+
+        .output-content ul {
+            margin: 8px 0 8px 20px;
+        }
+
+        .output-content li {
+            margin: 4px 0;
+        }
+
+        .prototype-link {
+            display: inline-block;
+            background: #0176D3;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .prototype-link:hover {
+            background: #014486;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(1, 118, 211, 0.3);
+        }
+
+        .api-list {
+            font-size: 12px;
+            color: #6B7280;
+            margin-top: 16px;
+            padding: 12px;
+            background: #F7F9FC;
+            border-radius: 4px;
+        }
+
+        .api-list strong {
+            color: #0176D3;
+        }
+
+        .click-hint {
+            font-size: 12px;
+            color: #0176D3;
+            text-align: center;
+            margin-top: 12px;
+            opacity: 0.7;
+        }
+
+        .legend {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>IDMC Skills Catalog</h1>
+        <p>Click any skill to see example • 20 workflow-level skills for data management</p>
+    </div>
+
+    <div class="container">
+        <div class="legend">
+            <div class="legend-item">
+                <span style="background: #D1FAE5; color: #065F46; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold;">EXISTS</span>
+                <span>MCP server delivered</span>
+            </div>
+            <div class="legend-item">
+                <span style="background: #DBEAFE; color: #1E40AF; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold;">PLANNED</span>
+                <span>In roadmap</span>
+            </div>
+            <div class="legend-item">
+                <span style="background: #FEF3C7; color: #92400E; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold;">PARTIAL</span>
+                <span>Partial support</span>
+            </div>
+            <div class="legend-item">
+                <span style="background: #E0E7FF; color: #3730A3; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold;">NEW</span>
+                <span>New capability</span>
+            </div>
+        </div>
+
+        <div class="skills-grid" id="skillsGrid">
+            <!-- Skills will be inserted here by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        const skills = [
+            {
+                number: 1,
+                title: "Discover and search assets",
+                type: "APP",
+                status: "exists",
+                description: "Semantic search for data assets with filters and context",
+                prompt: "Where is customer revenue data?",
+                output: `<strong>Results ranked by relevance + quality + access:</strong>
+
+• <strong>revenue_by_product</strong> – Trust Score: 94 🟢
+  Daily refresh • Owned by Finance • Certified
+  Schema: product_id, revenue, date, category
+  Last used by Sarah (Analytics) 2 days ago
+
+• <strong>customer_revenue_monthly</strong> – Trust Score: 87 🟡
+  Monthly refresh • Owned by Sales • Not certified
+  Schema: customer_id, revenue, month, region
+  Last used 3 months ago
+
+<strong>Filters applied:</strong> Access granted ✓ • Quality > 80 • Active tables only`,
+                apis: "Catalog Discovery, CDGC Metadata Search, CDGC Rating, Audit Management",
+                prototype: "prototypes/smart_discovery_app.html"
+            },
+            {
+                number: 2,
+                title: "Enrich catalog metadata",
+                type: "MCP",
+                status: "exists",
+                description: "Auto-generate descriptions, tags, and owner assignments",
+                prompt: "New table 'user_events' added to catalog",
+                output: `<strong>Auto-enriched metadata:</strong>
+
+• <strong>Description:</strong> "Event tracking for user interactions including clicks, page views, and conversions"
+• <strong>Tags:</strong> Analytics, User Behavior, Product, High-Volume
+• <strong>Owner:</strong> Sarah Chen (Analytics) — inferred from Git commits
+• <strong>Sensitivity:</strong> Low (no PII detected)
+• <strong>Usage:</strong> Connected to 3 downstream dashboards
+• <strong>Quality Score:</strong> 91/100
+
+<strong>Action:</strong> Notification sent to Sarah for review`,
+                apis: "Catalog Enrichment, CDGC Asset Enrichment, Audit Management",
+                prototype: null
+            },
+            {
+                number: 3,
+                title: "Trace lineage and impact",
+                type: "APP",
+                status: "planned",
+                description: "Visualize upstream/downstream dependencies and change impact",
+                prompt: "I want to drop the 'region' column from customer_revenue_monthly",
+                output: `<strong>Impact Analysis:</strong>
+
+🔴 <strong>3 Breaking Changes</strong>
+• Sales Dashboard (critical) — uses region for filtering
+• Regional Report (high) — groups by region
+• Territory Mapping (medium) — joins on region
+
+🟡 <strong>2 Warnings</strong>
+• Customer Segmentation — region used but has fallback
+• Revenue Forecast — uses region optionally
+
+🟢 <strong>7 Safe</strong>
+• All other downstream assets don't use this column
+
+<strong>Recommendation:</strong> Add default value migration before dropping column`,
+                apis: "CDGC Lineage",
+                prototype: "prototypes/schema_impact_analyzer.html"
+            },
+            {
+                number: 4,
+                title: "Document data assets",
+                type: "MCP",
+                status: "planned",
+                description: "Auto-generate documentation for tables, columns, relationships",
+                prompt: "Generate documentation for customer_master table",
+                output: `<strong>Generated Documentation:</strong>
+
+<strong>Table:</strong> customer_master
+<strong>Description:</strong> Master record for all customer entities with deduplication and golden record logic
+
+<strong>Columns:</strong>
+• customer_id (PK) — Unique identifier
+• email — Contact email (PII, masked in non-prod)
+• full_name — Concatenated first + last name
+• created_date — Account creation timestamp
+• status — Active/Inactive/Suspended
+
+<strong>Relationships:</strong>
+• Referenced by orders, tickets, subscriptions (FK)
+• Sources from: crm_leads, salesforce_accounts
+
+<strong>Transformation:</strong> MDM matching rules applied, survivorship: most recent wins`,
+                apis: "IDMC Asset Documentation, CDGC Search Metadata",
+                prototype: null
+            },
+            {
+                number: 5,
+                title: "Manage data access",
+                type: "MCP",
+                status: "planned",
+                description: "Request and approve data access based on policies",
+                prompt: "I need access to customer_pii table for analysis",
+                output: `<strong>Access Request Processed:</strong>
+
+<strong>Classification:</strong> PII — High Sensitivity
+<strong>Policy Match:</strong> Requires manager approval
+
+<strong>Risk Assessment:</strong>
+• User has no prior violations ✓
+• Similar approved access exists (marketing team) ✓
+• Request justification provided ✓
+
+<strong>Decision:</strong> Auto-routed to manager (Emily Martinez)
+<strong>Expected Response:</strong> 24 hours
+<strong>Alternative:</strong> customer_pii_masked table available now (auto-approved)
+
+<strong>Audit:</strong> Request logged for compliance tracking`,
+                apis: "Cloud Data Access Management",
+                prototype: null
+            },
+            {
+                number: 6,
+                title: "Manage connections",
+                type: "MCP",
+                status: "exists",
+                description: "Configure, test, and monitor data source connections",
+                prompt: "Snowflake connection failing in production",
+                output: `<strong>Connection Diagnosis:</strong>
+
+<strong>Connection:</strong> snowflake_prod_east
+<strong>Issue Detected:</strong> Authentication failure
+
+<strong>Analysis:</strong>
+• Network: Reachable ✓
+• Credentials: Expired (yesterday) ❌
+• SSL Certificate: Valid ✓
+• Firewall: Rules OK ✓
+
+<strong>Impact:</strong> 12 jobs blocked, 3 dashboards stale
+
+<strong>Actions:</strong>
+• Alert sent to owner (DevOps team)
+• Workaround: Backup connection available (snowflake_prod_west)
+• SLA breach: 2 hours until critical
+
+<strong>Resolution:</strong> Rotate credentials in next 30 minutes`,
+                apis: "Connection Management",
+                prototype: null
+            },
+            {
+                number: 7,
+                title: "Profile and assess data",
+                type: "APP",
+                status: "partial",
+                description: "Run profiling → generate stats, distributions, patterns",
+                prompt: "Profile new customer_contacts table",
+                output: `<strong>Quality Assessment Complete:</strong>
+
+<strong>Overall Score:</strong> 73/100 🟡
+
+<strong>Key Findings:</strong>
+• <strong>Email column:</strong> 15% invalid formats (missing @)
+• <strong>Phone column:</strong> 8 different format patterns detected
+• <strong>Nulls:</strong> 'address' has 23% nulls (exceeds 20% threshold)
+• <strong>Duplicates:</strong> 47 duplicate email addresses found
+
+<strong>Distributions:</strong>
+• Geographic: 60% US, 25% EU, 15% APAC
+• Customer type: 70% B2B, 30% B2C
+
+<strong>Suggested Rules:</strong> Email format validation, phone standardization, null handling`,
+                apis: "CDGC Data Quality Score, CLAIRE Data Quality Agent, DQ Profiling",
+                prototype: "prototypes/trust_score_dashboard.html"
+            },
+            {
+                number: 8,
+                title: "Build quality rules",
+                type: "MCP",
+                status: "planned",
+                description: "Create validation rules → test → deploy to pipelines",
+                prompt: "Create quality checks for customer_contacts table",
+                output: `<strong>Quality Rules Generated:</strong>
+
+<strong>From profiling analysis:</strong>
+1. Email format validation (regex pattern)
+2. Phone number standardization (10-digit US)
+3. Null threshold check (address < 20%)
+4. Duplicate detection (email uniqueness)
+5. Date range validation (created_date < today)
+
+<strong>Test Results on Sample (1000 rows):</strong>
+• Pass rate: 92%
+• Failures: 78 rows (mostly email format)
+
+<strong>Deployment:</strong>
+• Rules added to ingestion pipeline
+• Alert configured: Slack #data-quality
+• First run scheduled: Tonight 2 AM
+
+<strong>Monitoring:</strong> Daily reports on rule violations`,
+                apis: "DQ Rule Spec CRUD",
+                prototype: null
+            },
+            {
+                number: 9,
+                title: "Cleanse and standardize data",
+                type: "MCP",
+                status: "planned",
+                description: "Apply parsers/dictionaries to standardize formats",
+                prompt: "Standardize messy address data in customer_master",
+                output: `<strong>Cleansing Applied:</strong>
+
+<strong>Address Formats Found:</strong> 15 different patterns
+
+<strong>Standardization:</strong>
+• "123 Main St" → "123 MAIN STREET"
+• "Apt 5B" → "APARTMENT 5B"
+• "NY" → "NEW YORK"
+• "NYC" → "NEW YORK CITY"
+
+<strong>Results:</strong>
+• 8,432 addresses standardized (97%)
+• 234 addresses couldn't parse (3%)
+• Unresolved flagged for manual review
+
+<strong>Dictionary Lookups:</strong>
+• State codes expanded
+• City names normalized
+• ZIP codes validated
+
+<strong>Output:</strong> Ready for address verification service`,
+                apis: "DQ Cleanse, Parser, Dictionary CRUD",
+                prototype: null
+            },
+            {
+                number: 10,
+                title: "Classify sensitive data",
+                type: "MCP",
+                status: "new",
+                description: "Auto-detect and tag PII/PHI fields based on content patterns",
+                prompt: "New table employee_records added, classify sensitivity",
+                output: `<strong>Sensitivity Classification:</strong>
+
+<strong>PII Detected:</strong>
+• ssn → PII-SSN (High) — Social security pattern detected
+• email → PII-Email (Medium) — Email addresses found
+• phone_number → PII-Phone (Medium) — Phone patterns
+• date_of_birth → PII-DOB (High) — Birth dates
+
+<strong>Non-PII:</strong>
+• employee_id → Identifier only
+• department → Public
+• hire_date → Business data
+
+<strong>Actions Taken:</strong>
+• Catalog tagged with sensitivity levels
+• Masking policy auto-applied (non-prod environments)
+• Access restricted to HR group
+• Governance team notified
+
+<strong>Compliance:</strong> GDPR + CCPA requirements flagged`,
+                apis: "DQ Profiling, CDGC Asset Enrichment",
+                prototype: null
+            },
+            {
+                number: 11,
+                title: "Search master data",
+                type: "APP",
+                status: "partial",
+                description: "Find and retrieve business entities",
+                prompt: "Find customer 'John Smith' in California",
+                output: `<strong>Master Data Search Results:</strong>
+
+<strong>3 matches found (fuzzy matching applied):</strong>
+
+• <strong>John Smith</strong> — 95% confidence
+  ID: C-10234 • Location: Los Angeles, CA
+  Match: Name exact, location exact
+  Recent orders: 5 (last: 3 days ago)
+
+• <strong>Jon Smith</strong> — 87% confidence
+  ID: C-20145 • Location: San Diego, CA
+  Match: Name similar (typo), location exact
+  Recent orders: 2 (last: 45 days ago)
+
+• <strong>John Smyth</strong> — 72% confidence
+  ID: C-30987 • Location: San Francisco, CA
+  Match: Name variant, location close
+  Recent orders: 0
+
+<strong>Suggested Action:</strong> Top 2 may be duplicates — review for merge`,
+                apis: "Customer Identification (partial), MDM Search (planned)",
+                prototype: null
+            },
+            {
+                number: 12,
+                title: "Configure MDM agents",
+                type: "MCP",
+                status: "planned",
+                description: "Set up matching rules, thresholds, survivorship logic",
+                prompt: "Too many duplicate customers, optimize match rules",
+                output: `<strong>Match Rule Optimization:</strong>
+
+<strong>Current Performance:</strong>
+• False positives: 15% (too high)
+• Duplicates undetected: 8%
+
+<strong>Analysis:</strong>
+Email weight too high (0.9) causing false matches
+
+<strong>Recommended Changes:</strong>
+• Email weight: 0.9 → 0.7
+• Address weight: 0.5 → 0.6
+• Phone weight: 0.6 → 0.7
+
+<strong>Simulated Impact (1000 test pairs):</strong>
+• False positives: 15% → 6% ✓
+• True duplicates found: 92% → 94% ✓
+
+<strong>Deployment:</strong> Rules updated, next run in 2 hours
+<strong>Expected:</strong> 200+ duplicate pairs to merge`,
+                apis: "MDM Config Agent",
+                prototype: null
+            },
+            {
+                number: 13,
+                title: "Apply masking policies",
+                type: "MCP",
+                status: "planned",
+                description: "Configure and enforce data masking rules",
+                prompt: "Apply masking for PII fields in non-production environments",
+                output: `<strong>Masking Policy Deployed:</strong>
+
+<strong>PII Fields Identified:</strong> 24 fields across 8 tables
+
+<strong>Masking Rules:</strong>
+• SSN: Hash (irreversible)
+• Email: Tokenize (preserve format)
+• Phone: Redact last 4 digits
+• Name: Synthetic replacement
+• Address: Generalize to city level
+
+<strong>Environments:</strong>
+• Production: No masking ✓
+• Staging: Full masking applied
+• Dev: Full masking applied
+• Test: Full masking applied
+
+<strong>Validation:</strong> 100% of non-prod data masked
+<strong>Compliance:</strong> GDPR + CCPA requirements met
+<strong>Audit:</strong> Policy changes logged`,
+                apis: "Cloud Data Access Management",
+                prototype: null
+            },
+            {
+                number: 14,
+                title: "Generate mappings",
+                type: "MCP",
+                status: "planned",
+                description: "Analyze schemas → create transformation logic",
+                prompt: "Migrate data from legacy CRM to new Salesforce schema",
+                output: `<strong>Mapping Generated:</strong>
+
+<strong>Source:</strong> legacy_crm (45 fields)
+<strong>Target:</strong> salesforce_accounts (38 fields)
+
+<strong>Auto-matched (30 fields):</strong>
+• customer_id → account_id (direct)
+• first_name, last_name → full_name (CONCAT)
+• email → email_address (rename)
+
+<strong>Transformations Suggested (8 fields):</strong>
+• status_code → account_status (lookup: 1→Active, 2→Inactive)
+• create_ts → created_date (datetime format)
+• phone_main → phone (format: add country code)
+
+<strong>Unmapped (7 fields):</strong>
+• legacy_field_1, legacy_field_2... (no target match)
+
+<strong>Preview:</strong> Test with 100 rows → 98% success
+<strong>Ready:</strong> Deploy to production pipeline`,
+                apis: "CDI Mapping Generation GA",
+                prototype: null
+            },
+            {
+                number: 15,
+                title: "Build ingestion pipelines",
+                type: "MCP",
+                status: "planned",
+                description: "Set up database replication and CDC workflows",
+                prompt: "Set up real-time sync from MySQL orders table to Snowflake",
+                output: `<strong>Ingestion Pipeline Created:</strong>
+
+<strong>Source:</strong> MySQL orders (2.3M rows, growing ~5K/day)
+<strong>Target:</strong> Snowflake analytics.orders
+
+<strong>Configuration:</strong>
+• Method: Log-based CDC (change data capture)
+• Initial load: Full table snapshot (completed in 12 min)
+• Incremental: Real-time sync (< 30 sec latency)
+• Transformations: Timestamp conversion, status mapping
+
+<strong>Error Handling:</strong>
+• Schema drift detection: Enabled
+• Dead letter queue: Configured
+• Retry policy: 3 attempts, exponential backoff
+
+<strong>Monitoring:</strong>
+• Lag alert: > 5 minutes
+• Failure alert: Slack #data-ops
+
+<strong>Status:</strong> Live, 2,348,192 rows synced`,
+                apis: "CDIR V1, CDIR Task lifecycle",
+                prototype: null
+            },
+            {
+                number: 16,
+                title: "Orchestrate workflows",
+                type: "MCP",
+                status: "planned",
+                description: "Create multi-step taskflows with dependencies",
+                prompt: "Build daily ETL: Ingest → Transform → Load → Validate",
+                output: `<strong>Workflow Created:</strong>
+
+<strong>Steps:</strong>
+1. Ingest → Pull from 5 sources
+2. Transform → Apply business logic
+3. Load → Write to warehouse
+4. Validate → Run quality checks
+5. Notify → Slack on completion
+
+<strong>Dependencies:</strong>
+• Transform waits for Ingest (parallel load)
+• Load waits for Transform complete
+• Validate waits for Load success
+
+<strong>Error Handling:</strong>
+• Retry: 3 attempts on transient errors
+• Rollback: If validation fails
+• Alert: Immediate notification to oncall
+
+<strong>Schedule:</strong> Daily at 2:00 AM UTC
+<strong>Expected Duration:</strong> 45 minutes
+<strong>First Run:</strong> Tomorrow 2:00 AM`,
+                apis: "Taskflow Lifecycle Management",
+                prototype: null
+            },
+            {
+                number: 17,
+                title: "Monitor job execution",
+                type: "APP",
+                status: "exists",
+                description: "Track running/completed/failed jobs",
+                prompt: "Show me all jobs running right now",
+                output: `<strong>Active Jobs Dashboard:</strong>
+
+<strong>Currently Running: 23 jobs</strong>
+
+🟢 <strong>Healthy (20):</strong>
+• daily_sales_etl — 35% complete, on track
+• customer_sync — Running 8 min, normal
+• inventory_refresh — 70% complete
+
+🟡 <strong>Slow (3):</strong>
+• product_transform — 2x usual time (bottleneck detected)
+• order_aggregation — High memory usage (85%)
+
+<strong>Queued: 12 jobs</strong> waiting for resources
+
+<strong>Recent Failures (last hour): 2</strong>
+• payment_sync — Connection timeout (retrying)
+• user_export — Out of memory (needs tuning)
+
+<strong>Trends:</strong> Jobs 15% slower than last week
+<strong>Alert:</strong> Review product_transform for optimization`,
+                apis: "Job Management",
+                prototype: null
+            },
+            {
+                number: 18,
+                title: "Steward golden records",
+                type: "APP",
+                status: "planned",
+                description: "Review golden records → set survivorship → approve",
+                prompt: "Review customer merge candidates for approval",
+                output: `<strong>Merge Review Queue:</strong>
+
+<strong>High Confidence Match:</strong>
+
+<strong>Record A (C-10234):</strong>
+Email: john.smith@company.com
+Phone: 555-0123
+Address: 123 Main St, NYC
+Last updated: 2 days ago
+
+<strong>Record B (C-20987):</strong>
+Email: john.smith@company.com
+Phone: 555-0199 (different)
+Address: 123 Main Street, NYC
+Last updated: 45 days ago
+
+<strong>Match Score:</strong> 92% (email exact, address similar)
+
+<strong>Suggested Survivorship:</strong>
+• Email: Most recent (Record A) ✓
+• Phone: Record A (more recent) ✓
+• Address: Record B (more complete format)
+
+<strong>Conflicts:</strong> Phone mismatch — needs steward review
+
+<strong>Action:</strong> Approve merge | Reject | Request more info`,
+                apis: "MDM Data Stewardship Agent, MDM Entity CRUD",
+                prototype: null
+            },
+            {
+                number: 19,
+                title: "Optimize pipeline performance",
+                type: "MCP",
+                status: "new",
+                description: "Analyze runtime → recommend tuning",
+                prompt: "Why is daily_sales_etl taking 3 hours instead of 1 hour?",
+                output: `<strong>Performance Analysis:</strong>
+
+<strong>Current Runtime:</strong> 3h 12m (was: 1h 5m last week)
+<strong>Problem Detected:</strong> Transform stage taking 2.5 hours
+
+<strong>Root Cause:</strong>
+• Full table scan on 50M row table
+• Missing index on join key
+• No query pushdown to source
+
+<strong>Recommendations:</strong>
+1. Add index on customer_id → 40% faster
+2. Enable pushdown to source DB → 50% faster
+3. Increase partition count from 4 to 16 → 30% faster
+
+<strong>Estimated Impact:</strong>
+• New runtime: 45 minutes (60% improvement)
+• IPU savings: $1,200/month (40% reduction)
+
+<strong>Next Steps:</strong> Approve optimization plan to deploy tonight`,
+                apis: "Job Management (runtime stats), IPU Management APIs, Taskflow APIs",
+                prototype: null
+            },
+            {
+                number: 20,
+                title: "Modernize legacy pipelines",
+                type: "MCP",
+                status: "new",
+                description: "Analyze PowerCenter → recommend CDI patterns",
+                prompt: "Migrate 50 PowerCenter workflows to modern CDI",
+                output: `<strong>Migration Analysis:</strong>
+
+<strong>Legacy Workflows:</strong> 50 PowerCenter mappings
+
+<strong>Complexity Assessment:</strong>
+• Simple (direct mapping): 25 workflows → 2 days
+• Medium (transformations): 18 workflows → 8 days
+• Complex (custom logic): 7 workflows → 15 days
+
+<strong>Modernization Opportunities:</strong>
+• 30 can use pushdown → 3x faster
+• 15 can use CDC instead of full load → 90% less data
+• 12 have redundant transformations → consolidate
+
+<strong>Generated Migration Plan:</strong>
+1. Start with 25 simple workflows (quick wins)
+2. Migrate medium complexity next
+3. Complex workflows need custom review
+
+<strong>Estimated Effort:</strong> 25 days total
+<strong>Expected Benefit:</strong> 60% faster runtime, 50% lower IPU costs`,
+                apis: "Mapping Generation (read legacy), Taskflow Lifecycle",
+                prototype: null
+            }
+        ];
+
+        const skillsGrid = document.getElementById('skillsGrid');
+
+        skills.forEach(skill => {
+            const tile = document.createElement('div');
+            tile.className = 'skill-tile';
+            tile.innerHTML = `
+                <div class="skill-number">#${skill.number}</div>
+                <div class="skill-header">
+                    <div>
+                        <div class="skill-title">${skill.title}</div>
+                        <div>
+                            <span class="skill-type ${skill.type === 'MCP' ? 'mcp' : ''}">${skill.type}</span>
+                            <span class="skill-status ${skill.status}">${skill.status.toUpperCase()}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="skill-description">${skill.description}</div>
+                <div class="click-hint">👆 Click to see example</div>
+
+                <div class="skill-details">
+                    <div class="prompt-box">
+                        <div class="prompt-label">Example Prompt</div>
+                        <div class="prompt-text">"${skill.prompt}"</div>
+                    </div>
+
+                    <div class="output-box">
+                        <div class="output-label">Output</div>
+                        <div class="output-content">${skill.output}</div>
+                    </div>
+
+                    <div class="api-list">
+                        <strong>APIs Used:</strong> ${skill.apis}
+                    </div>
+
+                    ${skill.prototype ? `
+                        <a href="${skill.prototype}" target="_blank" class="prototype-link">
+                            🚀 View Interactive Prototype
+                        </a>
+                    ` : ''}
+                </div>
+            `;
+
+            tile.addEventListener('click', () => {
+                const wasExpanded = tile.classList.contains('expanded');
+
+                // Collapse all tiles
+                document.querySelectorAll('.skill-tile').forEach(t => {
+                    t.classList.remove('expanded');
+                });
+
+                // Expand clicked tile if it wasn't expanded
+                if (!wasExpanded) {
+                    tile.classList.add('expanded');
+                    tile.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+
+            skillsGrid.appendChild(tile);
+        });
+    </script>
+</body>
+</html>

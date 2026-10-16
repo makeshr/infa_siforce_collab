@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDMC Trust Score Dashboard - Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #F7F9FC;
+            color: #1a1a2e;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #0176D3 0%, #032D60 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .app-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .app-header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .dashboard {
+            max-width: 1600px;
+            margin: 30px auto;
+            padding: 0 40px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .summary-card.high::before { background: #059669; }
+        .summary-card.medium::before { background: #F59E0B; }
+        .summary-card.low::before { background: #DC2626; }
+
+        .summary-label {
+            font-size: 13px;
+            color: #6B7280;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .summary-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .summary-value.high { color: #059669; }
+        .summary-value.medium { color: #F59E0B; }
+        .summary-value.low { color: #DC2626; }
+
+        .summary-trend {
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .trend-up {
+            color: #059669;
+        }
+
+        .trend-down {
+            color: #DC2626;
+        }
+
+        .trend-neutral {
+            color: #6B7280;
+        }
+
+        .chart-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .chart-filter {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            border: 1px solid #E5E9EF;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: #0176D3;
+            color: white;
+            border-color: #0176D3;
+        }
+
+        .filter-btn:hover:not(.active) {
+            background: #F9FAFB;
+        }
+
+        .chart-canvas {
+            height: 300px;
+            position: relative;
+        }
+
+        .asset-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .asset-table th {
+            background: #F9FAFB;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #E5E9EF;
+        }
+
+        .asset-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #F3F4F6;
+        }
+
+        .asset-table tr:hover {
+            background: #F9FAFB;
+            cursor: pointer;
+        }
+
+        .asset-name {
+            color: #0176D3;
+            font-weight: 500;
+        }
+
+        .score-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 50px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .score-high {
+            background: #ECFDF5;
+            color: #059669;
+        }
+
+        .score-medium {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .score-low {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .sparkline {
+            display: inline-block;
+            width: 80px;
+            height: 30px;
+        }
+
+        .dimension-breakdown {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .dimension-item {
+            padding: 16px;
+            border: 1px solid #E5E9EF;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .dimension-label {
+            font-size: 12px;
+            color: #6B7280;
+            margin-bottom: 8px;
+        }
+
+        .dimension-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .dimension-bar {
+            height: 6px;
+            background: #F3F4F6;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .dimension-bar-fill {
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        .alert-panel {
+            background: #FEF3C7;
+            border: 1px solid #FDE68A;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .alert-icon {
+            font-size: 28px;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            color: #92400E;
+            margin-bottom: 4px;
+        }
+
+        .alert-message {
+            font-size: 14px;
+            color: #78350F;
+        }
+
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.05);
+            border-color: #0176D3;
+        }
+
+        .heatmap-cell.high { background: #ECFDF5; }
+        .heatmap-cell.medium { background: #FEF3C7; }
+        .heatmap-cell.low { background: #FEE2E2; }
+
+        .heatmap-score {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .heatmap-score.high { color: #059669; }
+        .heatmap-score.medium { color: #D97706; }
+        .heatmap-score.low { color: #DC2626; }
+
+        .heatmap-name {
+            font-size: 11px;
+            text-align: center;
+            color: #374151;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <h1>📊 Cross-Product Trust Score Dashboard</h1>
+        <p>Real-time trust metrics combining DI Success + DQ Scores + MDM Confidence + Certification Status</p>
+    </div>
+
+    <div class="dashboard">
+        <div class="alert-panel">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-content">
+                <div class="alert-title">3 Assets Require Attention</div>
+                <div class="alert-message">
+                    Trust scores dropped below 80 in the last 24 hours — customer_master (DQ freshness), fin_rev_agg (DI pipeline failure), sales_orders (MDM confidence)
+                </div>
+            </div>
+        </div>
+
+        <div class="summary-cards">
+            <div class="summary-card high">
+                <div class="summary-label">Platform Average Trust</div>
+                <div class="summary-value high">87</div>
+                <div class="summary-trend trend-up">
+                    <span>↑ 2 points</span>
+                    <span style="color: #6B7280;">vs last week</span>
+                </div>
+            </div>
+
+            <div class="summary-card high">
+                <div class="summary-label">High Trust Assets</div>
+                <div class="summary-value high">142</div>
+                <div class="summary-trend trend-up">
+                    <span>↑ 8 assets</span>
+                    <span style="color: #6B7280;">(Score ≥ 90)</span>
+                </div>
+            </div>
+
+            <div class="summary-card medium">
+                <div class="summary-label">Medium Trust Assets</div>
+                <div class="summary-value medium">68</div>
+                <div class="summary-trend trend-neutral">
+                    <span>→ No change</span>
+                    <span style="color: #6B7280;">(Score 70-89)</span>
+                </div>
+            </div>
+
+            <div class="summary-card low">
+                <div class="summary-label">Low Trust Assets</div>
+                <div class="summary-value low">12</div>
+                <div class="summary-trend trend-down">
+                    <span>↑ 3 assets</span>
+                    <span style="color: #6B7280;">(Score < 70)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-header">
+                <div class="chart-title">Trust Score Trend (Last 30 Days)</div>
+                <div class="chart-filter">
+                    <button class="filter-btn active">Platform</button>
+                    <button class="filter-btn">Sales</button>
+                    <button class="filter-btn">Finance</button>
+                    <button class="filter-btn">Marketing</button>
+                </div>
+            </div>
+            <div class="chart-canvas">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-header">
+                <div class="chart-title">Trust Score Dimensions</div>
+            </div>
+            <div class="dimension-breakdown">
+                <div class="dimension-item">
+                    <div class="dimension-label">DI Pipeline Success</div>
+                    <div class="dimension-value" style="color: #059669;">94%</div>
+                    <div class="dimension-bar">
+                        <div class="dimension-bar-fill" style="width: 94%; background: #059669;"></div>
+                    </div>
+                </div>
+                <div class="dimension-item">
+                    <div class="dimension-label">DQ Rule Compliance</div>
+                    <div class="dimension-value" style="color: #D97706;">86%</div>
+                    <div class="dimension-bar">
+                        <div class="dimension-bar-fill" style="width: 86%; background: #D97706;"></div>
+                    </div>
+                </div>
+                <div class="dimension-item">
+                    <div class="dimension-label">MDM Match Confidence</div>
+                    <div class="dimension-value" style="color: #059669;">91%</div>
+                    <div class="dimension-bar">
+                        <div class="dimension-bar-fill" style="width: 91%; background: #059669;"></div>
+                    </div>
+                </div>
+                <div class="dimension-item">
+                    <div class="dimension-label">Certification Rate</div>
+                    <div class="dimension-value" style="color: #D97706;">78%</div>
+                    <div class="dimension-bar">
+                        <div class="dimension-bar-fill" style="width: 78%; background: #D97706;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-header">
+                <div class="chart-title">Top 20 Assets Heatmap</div>
+            </div>
+            <div class="heatmap">
+                <div class="heatmap-cell high">
+                    <div class="heatmap-score high">95</div>
+                    <div class="heatmap-name">customer_master</div>
+                </div>
+                <div class="heatmap-cell high">
+                    <div class="heatmap-score high">93</div>
+                    <div class="heatmap-name">mrr_metrics</div>
+                </div>
+                <div class="heatmap-cell high">
+                    <div class="heatmap-score high">92</div>
+                    <div class="heatmap-name">revenue_monthly</div>
+                </div>
+                <div class="heatmap-cell high">
+                    <div class="heatmap-score high">90</div>
+                    <div class="heatmap-name">segments</div>
+                </div>
+                <div class="heatmap-cell medium">
+                    <div class="heatmap-score medium">88</div>
+                    <div class="heatmap-name">product_revenue</div>
+                </div>
+                <div class="heatmap-cell medium">
+                    <div class="heatmap-score medium">85</div>
+                    <div class="heatmap-name">sales_orders</div>
+                </div>
+                <div class="heatmap-cell medium">
+                    <div class="heatmap-score medium">82</div>
+                    <div class="heatmap-name">forecast_model</div>
+                </div>
+                <div class="heatmap-cell medium">
+                    <div class="heatmap-score medium">80</div>
+                    <div class="heatmap-name">campaigns</div>
+                </div>
+                <div class="heatmap-cell low">
+                    <div class="heatmap-score low">78</div>
+                    <div class="heatmap-name">fin_rev_agg</div>
+                </div>
+                <div class="heatmap-cell low">
+                    <div class="heatmap-score low">75</div>
+                    <div class="heatmap-name">legacy_orders</div>
+                </div>
+                <div class="heatmap-cell medium">
+                    <div class="heatmap-score medium">88</div>
+                    <div class="heatmap-name">territories</div>
+                </div>
+                <div class="heatmap-cell high">
+                    <div class="heatmap-score high">92</div>
+                    <div class="heatmap-name">accounts</div>
+                </div>
+                <div class="heatmap-cell medium">
+                    <div class="heatmap-score medium">84</div>
+                    <div class="heatmap-name">opportunities</div>
+                </div>
+                <div class="heatmap-cell high">
+                    <div class="heatmap-score high">91</div>
+                    <div class="heatmap-name">contacts</div>
+                </div>
+                <div class="heatmap-cell medium">
+                    <div class="heatmap-score medium">87</div>
+                    <div class="heatmap-name">leads</div>
+                </div>
+                <div class="heatmap-cell low">
+                    <div class="heatmap-score low">72</div>
+                    <div class="heatmap-name">web_events</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-header">
+                <div class="chart-title">Asset Details (Click to drill down)</div>
+            </div>
+            <table class="asset-table">
+                <thead>
+                    <tr>
+                        <th>Asset Name</th>
+                        <th>Domain</th>
+                        <th>Trust Score</th>
+                        <th>DI Success</th>
+                        <th>DQ Score</th>
+                        <th>MDM Conf</th>
+                        <th>Certified</th>
+                        <th>Trend (7d)</th>
+                    </tr>
+                </thead>
+                <tbody id="assetTableBody">
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script>
+        // Mock data for assets
+        const assets = [
+            { name: 'customer_master', domain: 'Sales', trust: 95, di: 100, dq: 96, mdm: 98, certified: true, trend: [92, 93, 94, 94, 95, 95, 95] },
+            { name: 'monthly_recurring_revenue', domain: 'Finance', trust: 93, di: 95, dq: 92, mdm: 95, certified: true, trend: [91, 92, 92, 93, 93, 93, 93] },
+            { name: 'customer_revenue_monthly', domain: 'Sales', trust: 92, di: 98, dq: 90, mdm: 92, certified: true, trend: [90, 91, 91, 92, 92, 92, 92] },
+            { name: 'customer_segments', domain: 'Marketing', trust: 90, di: 92, dq: 88, mdm: 92, certified: true, trend: [88, 89, 89, 90, 90, 90, 90] },
+            { name: 'revenue_by_product', domain: 'Sales', trust: 88, di: 90, dq: 86, mdm: 90, certified: true, trend: [86, 87, 87, 88, 88, 88, 88] },
+            { name: 'sales_orders', domain: 'Sales', trust: 85, di: 88, dq: 82, mdm: 86, certified: true, trend: [87, 86, 85, 84, 84, 85, 85] },
+            { name: 'revenue_forecast', domain: 'Finance', trust: 82, di: 85, dq: 80, mdm: 82, certified: false, trend: [80, 81, 81, 82, 82, 82, 82] },
+            { name: 'fin_rev_agg', domain: 'Finance', trust: 78, di: 70, dq: 75, mdm: 85, certified: false, trend: [82, 81, 80, 79, 78, 78, 78] },
+            { name: 'legacy_customer_data', domain: 'Sales', trust: 75, di: 80, dq: 72, mdm: 75, certified: false, trend: [76, 76, 75, 75, 75, 75, 75] },
+            { name: 'web_analytics_raw', domain: 'Marketing', trust: 72, di: 75, dq: 68, mdm: 74, certified: false, trend: [70, 71, 71, 72, 72, 72, 72] }
+        ];
+
+        function getScoreClass(score) {
+            if (score >= 90) return 'score-high';
+            if (score >= 70) return 'score-medium';
+            return 'score-low';
+        }
+
+        function renderAssetTable() {
+            const tbody = document.getElementById('assetTableBody');
+            tbody.innerHTML = assets.map(asset => `
+                <tr onclick="alert('Drilling down to ${asset.name}...')">
+                    <td><span class="asset-name">${asset.name}</span></td>
+                    <td>${asset.domain}</td>
+                    <td><span class="score-badge ${getScoreClass(asset.trust)}">${asset.trust}</span></td>
+                    <td>${asset.di}%</td>
+                    <td>${asset.dq}%</td>
+                    <td>${asset.mdm}%</td>
+                    <td>${asset.certified ? '✓' : '—'}</td>
+                    <td><span class="sparkline">${renderSparkline(asset.trend)}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderSparkline(data) {
+            const max = Math.max(...data);
+            const min = Math.min(...data);
+            const range = max - min || 1;
+            const width = 80;
+            const height = 30;
+            const step = width / (data.length - 1);
+
+            const points = data.map((val, i) => {
+                const x = i * step;
+                const y = height - ((val - min) / range) * height;
+                return `${x},${y}`;
+            }).join(' ');
+
+            return `<svg width="${width}" height="${height}" style="display: inline-block;">
+                <polyline
+                    points="${points}"
+                    fill="none"
+                    stroke="${data[data.length - 1] >= data[0] ? '#059669' : '#DC2626'}"
+                    stroke-width="2"
+                />
+            </svg>`;
+        }
+
+        // Render trend chart
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['30d ago', '25d', '20d', '15d', '10d', '5d', 'Today'],
+                datasets: [
+                    {
+                        label: 'Platform Average',
+                        data: [84, 85, 85, 86, 86, 87, 87],
+                        borderColor: '#0176D3',
+                        backgroundColor: 'rgba(1, 118, 211, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'High Trust (≥90)',
+                        data: [92, 92, 93, 93, 94, 94, 94],
+                        borderColor: '#059669',
+                        backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Medium Trust (70-89)',
+                        data: [78, 79, 80, 81, 82, 82, 83],
+                        borderColor: '#F59E0B',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                scales: {
+                    y: {
+                        min: 70,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        renderAssetTable();
+    </script>
+</body>
+</html>

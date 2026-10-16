@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDMC Smart Discovery - Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #F7F9FC;
+            color: #1a1a2e;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #0176D3 0%, #032D60 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .app-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .app-header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .search-container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 40px;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 16px 50px 16px 20px;
+            font-size: 16px;
+            border: 2px solid #E5E9EF;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            border-color: #0176D3;
+            box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6B7280;
+            font-size: 20px;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6B7280;
+            text-transform: uppercase;
+        }
+
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid #E5E9EF;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .filter-group select:focus {
+            border-color: #0176D3;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .results-count {
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        .results-count strong {
+            color: #0176D3;
+            font-weight: 600;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 8px;
+        }
+
+        .view-btn {
+            padding: 8px 12px;
+            border: 1px solid #E5E9EF;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .view-btn.active {
+            background: #0176D3;
+            color: white;
+            border-color: #0176D3;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .result-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .result-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .result-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #0176D3;
+            margin-bottom: 4px;
+        }
+
+        .result-path {
+            font-size: 12px;
+            color: #6B7280;
+            font-family: 'Courier New', monospace;
+        }
+
+        .trust-score {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .trust-high {
+            background: #ECFDF5;
+            color: #059669;
+        }
+
+        .trust-medium {
+            background: #FEF3C7;
+            color: #D97706;
+        }
+
+        .trust-low {
+            background: #FEE2E2;
+            color: #DC2626;
+        }
+
+        .result-metadata {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+            padding: 12px 0;
+            border-top: 1px solid #F3F4F6;
+            border-bottom: 1px solid #F3F4F6;
+        }
+
+        .metadata-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .metadata-label {
+            font-size: 11px;
+            color: #6B7280;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .metadata-value {
+            font-size: 13px;
+            color: #1a1a2e;
+        }
+
+        .result-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .tag {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .tag-certified {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .tag-pii {
+            background: #FFE4E6;
+            color: #9F1239;
+        }
+
+        .tag-popular {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .result-description {
+            font-size: 13px;
+            color: #6B7280;
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+
+        .preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .preview-modal.active {
+            display: flex;
+        }
+
+        .preview-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .preview-header {
+            padding: 24px;
+            border-bottom: 1px solid #E5E9EF;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .preview-header h2 {
+            font-size: 20px;
+            color: #0176D3;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6B7280;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #F3F4F6;
+        }
+
+        .preview-body {
+            padding: 24px;
+        }
+
+        .preview-section {
+            margin-bottom: 24px;
+        }
+
+        .preview-section h3 {
+            font-size: 14px;
+            color: #6B7280;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .schema-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .schema-table th {
+            background: #F9FAFB;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #E5E9EF;
+        }
+
+        .schema-table td {
+            padding: 10px;
+            border-bottom: 1px solid #F3F4F6;
+        }
+
+        .schema-table tr:hover {
+            background: #F9FAFB;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6B7280;
+        }
+
+        .no-results-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <h1>🔍 Smart Data Discovery</h1>
+        <p>Find data assets using natural language — powered by IDMC CDGC + CLAIRE AI</p>
+    </div>
+
+    <div class="search-container">
+        <div class="search-box">
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Try: 'customer revenue by month' or 'tables with PII' or 'sales data by region'"
+                value="customer revenue"
+            >
+            <span class="search-icon">🔍</span>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>Quality Threshold</label>
+                <select id="qualityFilter">
+                    <option value="all">All Qualities</option>
+                    <option value="high">High (90-100)</option>
+                    <option value="medium">Medium (70-89)</option>
+                    <option value="low">Low (&lt;70)</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Domain</label>
+                <select id="domainFilter">
+                    <option value="all">All Domains</option>
+                    <option value="sales">Sales</option>
+                    <option value="finance">Finance</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="operations">Operations</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Data Sensitivity</label>
+                <select id="sensitivityFilter">
+                    <option value="all">All Types</option>
+                    <option value="public">Public</option>
+                    <option value="internal">Internal</option>
+                    <option value="confidential">Confidential</option>
+                    <option value="restricted">Restricted (PII)</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Certification</label>
+                <select id="certificationFilter">
+                    <option value="all">All</option>
+                    <option value="certified">Certified Only</option>
+                    <option value="pending">Pending Review</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="results-header">
+            <div class="results-count">
+                Found <strong id="resultsCount">8</strong> results for "<strong id="searchTerm">customer revenue</strong>"
+            </div>
+            <div class="view-toggle">
+                <button class="view-btn active">Grid</button>
+                <button class="view-btn">Table</button>
+            </div>
+        </div>
+
+        <div class="results-grid" id="resultsGrid">
+            <!-- Results will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-content">
+            <div class="preview-header">
+                <div>
+                    <h2 id="previewTitle">customer_revenue_monthly</h2>
+                    <div class="result-path" id="previewPath">Snowflake > SALES_DB > analytics.customer_revenue_monthly</div>
+                </div>
+                <button class="close-btn" onclick="closePreview()">×</button>
+            </div>
+            <div class="preview-body" id="previewBody">
+                <!-- Preview content populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock data - in production, this would come from IDMC CDGC MCP
+        const mockData = [
+            {
+                id: 1,
+                name: 'customer_revenue_monthly',
+                path: 'Snowflake > SALES_DB > analytics',
+                fullPath: 'Snowflake > SALES_DB > analytics.customer_revenue_monthly',
+                trustScore: 92,
+                owner: 'Sarah Chen',
+                lastUpdated: '2 hours ago',
+                rowCount: '2.4M',
+                description: 'Monthly aggregated revenue by customer ID. Refreshed daily at 2 AM UTC. Source: Salesforce Opportunities.',
+                domain: 'sales',
+                certified: true,
+                hasPII: false,
+                popular: true,
+                schema: [
+                    { column: 'customer_id', type: 'VARCHAR(50)', nullable: false, description: 'Unique customer identifier' },
+                    { column: 'month_date', type: 'DATE', nullable: false, description: 'First day of the month' },
+                    { column: 'total_revenue', type: 'DECIMAL(15,2)', nullable: true, description: 'Sum of all revenue for the month' },
+                    { column: 'transaction_count', type: 'INTEGER', nullable: true, description: 'Number of transactions' },
+                    { column: 'region', type: 'VARCHAR(50)', nullable: true, description: 'Customer region' }
+                ],
+                quality: {
+                    completeness: 98,
+                    accuracy: 95,
+                    freshness: 100
+                },
+                usage: {
+                    queries: 847,
+                    users: 23,
+                    dashboards: 12
+                }
+            },
+            {
+                id: 2,
+                name: 'revenue_by_product',
+                path: 'Snowflake > SALES_DB > reporting',
+                fullPath: 'Snowflake > SALES_DB > reporting.revenue_by_product',
+                trustScore: 88,
+                owner: 'Mike Johnson',
+                lastUpdated: '1 day ago',
+                rowCount: '850K',
+                description: 'Product-level revenue breakdown. Updated weekly. Includes product hierarchy and category rollups.',
+                domain: 'sales',
+                certified: true,
+                hasPII: false,
+                popular: true,
+                schema: [
+                    { column: 'product_id', type: 'VARCHAR(50)', nullable: false, description: 'Product SKU' },
+                    { column: 'product_name', type: 'VARCHAR(200)', nullable: true, description: 'Product display name' },
+                    { column: 'category', type: 'VARCHAR(100)', nullable: true, description: 'Product category' },
+                    { column: 'revenue', type: 'DECIMAL(15,2)', nullable: true, description: 'Total revenue' },
+                    { column: 'period', type: 'DATE', nullable: false, description: 'Reporting period' }
+                ],
+                quality: {
+                    completeness: 92,
+                    accuracy: 90,
+                    freshness: 85
+                },
+                usage: {
+                    queries: 523,
+                    users: 18,
+                    dashboards: 8
+                }
+            },
+            {
+                id: 3,
+                name: 'customer_master',
+                path: 'PostgreSQL > CRM_DB > master',
+                fullPath: 'PostgreSQL > CRM_DB > master.customer_master',
+                trustScore: 95,
+                owner: 'Lisa Park',
+                lastUpdated: '3 hours ago',
+                rowCount: '1.2M',
+                description: 'Golden customer records from MDM. Contains PII - restricted access. Real-time sync from Salesforce.',
+                domain: 'sales',
+                certified: true,
+                hasPII: true,
+                popular: true,
+                schema: [
+                    { column: 'customer_id', type: 'VARCHAR(50)', nullable: false, description: 'MDM customer ID' },
+                    { column: 'email', type: 'VARCHAR(200)', nullable: true, description: 'Primary email (PII)' },
+                    { column: 'phone', type: 'VARCHAR(20)', nullable: true, description: 'Phone number (PII)' },
+                    { column: 'full_name', type: 'VARCHAR(200)', nullable: true, description: 'Customer full name (PII)' },
+                    { column: 'company_name', type: 'VARCHAR(200)', nullable: true, description: 'Company name' }
+                ],
+                quality: {
+                    completeness: 96,
+                    accuracy: 98,
+                    freshness: 100
+                },
+                usage: {
+                    queries: 1245,
+                    users: 42,
+                    dashboards: 18
+                }
+            },
+            {
+                id: 4,
+                name: 'fin_rev_agg',
+                path: 'Snowflake > FINANCE_DB > warehouse',
+                fullPath: 'Snowflake > FINANCE_DB > warehouse.fin_rev_agg',
+                trustScore: 78,
+                owner: 'David Martinez',
+                lastUpdated: '5 days ago',
+                rowCount: '450K',
+                description: 'Finance team revenue aggregation table. Legacy naming convention. Pending certification.',
+                domain: 'finance',
+                certified: false,
+                hasPII: false,
+                popular: false,
+                schema: [
+                    { column: 'rev_dt', type: 'DATE', nullable: false, description: 'Revenue date' },
+                    { column: 'amt', type: 'DECIMAL(15,2)', nullable: true, description: 'Revenue amount' },
+                    { column: 'curr', type: 'VARCHAR(3)', nullable: true, description: 'Currency code' },
+                    { column: 'acct_id', type: 'VARCHAR(50)', nullable: true, description: 'Account ID' }
+                ],
+                quality: {
+                    completeness: 85,
+                    accuracy: 75,
+                    freshness: 60
+                },
+                usage: {
+                    queries: 156,
+                    users: 8,
+                    dashboards: 3
+                }
+            },
+            {
+                id: 5,
+                name: 'sales_orders',
+                path: 'Snowflake > SALES_DB > raw',
+                fullPath: 'Snowflake > SALES_DB > raw.sales_orders',
+                trustScore: 85,
+                owner: 'Emma Wilson',
+                lastUpdated: '30 minutes ago',
+                rowCount: '5.8M',
+                description: 'Raw sales orders from e-commerce platform. Real-time ingestion via CDC. High volume.',
+                domain: 'sales',
+                certified: true,
+                hasPII: false,
+                popular: true,
+                schema: [
+                    { column: 'order_id', type: 'VARCHAR(50)', nullable: false, description: 'Unique order ID' },
+                    { column: 'customer_id', type: 'VARCHAR(50)', nullable: true, description: 'Customer ID' },
+                    { column: 'order_date', type: 'TIMESTAMP', nullable: false, description: 'Order timestamp' },
+                    { column: 'total_amount', type: 'DECIMAL(15,2)', nullable: true, description: 'Order total' },
+                    { column: 'status', type: 'VARCHAR(20)', nullable: true, description: 'Order status' }
+                ],
+                quality: {
+                    completeness: 90,
+                    accuracy: 88,
+                    freshness: 98
+                },
+                usage: {
+                    queries: 634,
+                    users: 19,
+                    dashboards: 15
+                }
+            },
+            {
+                id: 6,
+                name: 'revenue_forecast',
+                path: 'Snowflake > ANALYTICS_DB > models',
+                fullPath: 'Snowflake > ANALYTICS_DB > models.revenue_forecast',
+                trustScore: 82,
+                owner: 'Chris Taylor',
+                lastUpdated: '1 week ago',
+                rowCount: '120K',
+                description: 'ML-generated revenue forecast by region. Updated monthly. Based on 2-year historical data.',
+                domain: 'finance',
+                certified: false,
+                hasPII: false,
+                popular: false,
+                schema: [
+                    { column: 'forecast_month', type: 'DATE', nullable: false, description: 'Forecast period' },
+                    { column: 'region', type: 'VARCHAR(50)', nullable: true, description: 'Sales region' },
+                    { column: 'predicted_revenue', type: 'DECIMAL(15,2)', nullable: true, description: 'ML prediction' },
+                    { column: 'confidence_interval', type: 'DECIMAL(5,2)', nullable: true, description: 'Prediction confidence' },
+                    { column: 'model_version', type: 'VARCHAR(20)', nullable: true, description: 'Model version' }
+                ],
+                quality: {
+                    completeness: 88,
+                    accuracy: 80,
+                    freshness: 70
+                },
+                usage: {
+                    queries: 234,
+                    users: 12,
+                    dashboards: 5
+                }
+            },
+            {
+                id: 7,
+                name: 'customer_segments',
+                path: 'Snowflake > MARKETING_DB > analytics',
+                fullPath: 'Snowflake > MARKETING_DB > analytics.customer_segments',
+                trustScore: 90,
+                owner: 'Rachel Kim',
+                lastUpdated: '2 days ago',
+                rowCount: '980K',
+                description: 'Customer segmentation with revenue tiers. Updated weekly. Used for targeted campaigns.',
+                domain: 'marketing',
+                certified: true,
+                hasPII: false,
+                popular: true,
+                schema: [
+                    { column: 'customer_id', type: 'VARCHAR(50)', nullable: false, description: 'Customer ID' },
+                    { column: 'segment', type: 'VARCHAR(50)', nullable: true, description: 'Segment name' },
+                    { column: 'lifetime_value', type: 'DECIMAL(15,2)', nullable: true, description: 'Total LTV' },
+                    { column: 'last_purchase_date', type: 'DATE', nullable: true, description: 'Most recent purchase' },
+                    { column: 'revenue_tier', type: 'VARCHAR(20)', nullable: true, description: 'Revenue tier (High/Med/Low)' }
+                ],
+                quality: {
+                    completeness: 94,
+                    accuracy: 92,
+                    freshness: 88
+                },
+                usage: {
+                    queries: 445,
+                    users: 16,
+                    dashboards: 9
+                }
+            },
+            {
+                id: 8,
+                name: 'monthly_recurring_revenue',
+                path: 'Snowflake > FINANCE_DB > metrics',
+                fullPath: 'Snowflake > FINANCE_DB > metrics.monthly_recurring_revenue',
+                trustScore: 93,
+                owner: 'Alex Rivera',
+                lastUpdated: '1 day ago',
+                rowCount: '340K',
+                description: 'SaaS MRR metrics by customer and product. Gold standard for finance reporting. Board-ready.',
+                domain: 'finance',
+                certified: true,
+                hasPII: false,
+                popular: true,
+                schema: [
+                    { column: 'month', type: 'DATE', nullable: false, description: 'Month start date' },
+                    { column: 'customer_id', type: 'VARCHAR(50)', nullable: false, description: 'Customer ID' },
+                    { column: 'mrr', type: 'DECIMAL(15,2)', nullable: true, description: 'Monthly recurring revenue' },
+                    { column: 'product_line', type: 'VARCHAR(100)', nullable: true, description: 'Product line' },
+                    { column: 'contract_type', type: 'VARCHAR(50)', nullable: true, description: 'Annual/Monthly' }
+                ],
+                quality: {
+                    completeness: 99,
+                    accuracy: 97,
+                    freshness: 95
+                },
+                usage: {
+                    queries: 712,
+                    users: 28,
+                    dashboards: 14
+                }
+            }
+        ];
+
+        let currentData = [...mockData];
+
+        function getTrustClass(score) {
+            if (score >= 90) return 'trust-high';
+            if (score >= 70) return 'trust-medium';
+            return 'trust-low';
+        }
+
+        function renderResults() {
+            const grid = document.getElementById('resultsGrid');
+            grid.innerHTML = '';
+
+            if (currentData.length === 0) {
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">🔍</div>
+                        <h3>No results found</h3>
+                        <p>Try adjusting your filters or search term</p>
+                    </div>
+                `;
+                return;
+            }
+
+            currentData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.onclick = () => showPreview(item);
+
+                const tags = [];
+                if (item.certified) tags.push('<span class="tag tag-certified">✓ Certified</span>');
+                if (item.hasPII) tags.push('<span class="tag tag-pii">PII</span>');
+                if (item.popular) tags.push('<span class="tag tag-popular">Popular</span>');
+
+                card.innerHTML = `
+                    <div class="result-card-header">
+                        <div style="flex: 1;">
+                            <div class="result-title">${item.name}</div>
+                            <div class="result-path">${item.path}</div>
+                        </div>
+                        <div class="trust-score ${getTrustClass(item.trustScore)}">
+                            ${item.trustScore}
+                        </div>
+                    </div>
+
+                    <div class="result-metadata">
+                        <div class="metadata-item">
+                            <span class="metadata-label">Owner</span>
+                            <span class="metadata-value">${item.owner}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Updated</span>
+                            <span class="metadata-value">${item.lastUpdated}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Rows</span>
+                            <span class="metadata-value">${item.rowCount}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">Queries/Week</span>
+                            <span class="metadata-value">${item.usage.queries}</span>
+                        </div>
+                    </div>
+
+                    <div class="result-tags">
+                        ${tags.join('')}
+                    </div>
+
+                    <div class="result-description">
+                        ${item.description}
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            document.getElementById('resultsCount').textContent = currentData.length;
+        }
+
+        function showPreview(item) {
+            document.getElementById('previewTitle').textContent = item.name;
+            document.getElementById('previewPath').textContent = item.fullPath;
+
+            const body = document.getElementById('previewBody');
+            body.innerHTML = `
+                <div class="preview-section">
+                    <h3>Overview</h3>
+                    <p>${item.description}</p>
+                    <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                        <div>
+                            <div class="metadata-label">Trust Score</div>
+                            <div class="trust-score ${getTrustClass(item.trustScore)}" style="margin-top: 5px;">
+                                ${item.trustScore}
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metadata-label">Owner</div>
+                            <div class="metadata-value">${item.owner}</div>
+                        </div>
+                        <div>
+                            <div class="metadata-label">Domain</div>
+                            <div class="metadata-value">${item.domain}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-section">
+                    <h3>Schema (${item.schema.length} columns)</h3>
+                    <table class="schema-table">
+                        <thead>
+                            <tr>
+                                <th>Column Name</th>
+                                <th>Data Type</th>
+                                <th>Nullable</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${item.schema.map(col => `
+                                <tr>
+                                    <td><strong>${col.column}</strong></td>
+                                    <td>${col.type}</td>
+                                    <td>${col.nullable ? 'Yes' : 'No'}</td>
+                                    <td>${col.description}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="preview-section">
+                    <h3>Quality Metrics</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                        <div>
+                            <div class="metadata-label">Completeness</div>
+                            <div style="font-size: 20px; font-weight: 600; color: ${item.quality.completeness >= 90 ? '#059669' : '#D97706'};">
+                                ${item.quality.completeness}%
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metadata-label">Accuracy</div>
+                            <div style="font-size: 20px; font-weight: 600; color: ${item.quality.accuracy >= 90 ? '#059669' : '#D97706'};">
+                                ${item.quality.accuracy}%
+                            </div>
+                        </div>
+                        <div>
+                            <div class="metadata-label">Freshness</div>
+                            <div style="font-size: 20px; font-weight: 600; color: ${item.quality.freshness >= 90 ? '#059669' : '#D97706'};">
+                                ${item.quality.freshness}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-section">
+                    <h3>Usage Statistics</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                        <div>
+                            <div class="metadata-label">Queries (7 days)</div>
+                            <div class="metadata-value" style="font-size: 18px; font-weight: 600;">${item.usage.queries}</div>
+                        </div>
+                        <div>
+                            <div class="metadata-label">Active Users</div>
+                            <div class="metadata-value" style="font-size: 18px; font-weight: 600;">${item.usage.users}</div>
+                        </div>
+                        <div>
+                            <div class="metadata-label">Dashboards</div>
+                            <div class="metadata-value" style="font-size: 18px; font-weight: 600;">${item.usage.dashboards}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('previewModal').classList.add('active');
+        }
+
+        function closePreview() {
+            document.getElementById('previewModal').classList.remove('active');
+        }
+
+        function applyFilters() {
+            const quality = document.getElementById('qualityFilter').value;
+            const domain = document.getElementById('domainFilter').value;
+            const sensitivity = document.getElementById('sensitivityFilter').value;
+            const certification = document.getElementById('certificationFilter').value;
+
+            currentData = mockData.filter(item => {
+                // Quality filter
+                if (quality !== 'all') {
+                    if (quality === 'high' && item.trustScore < 90) return false;
+                    if (quality === 'medium' && (item.trustScore < 70 || item.trustScore >= 90)) return false;
+                    if (quality === 'low' && item.trustScore >= 70) return false;
+                }
+
+                // Domain filter
+                if (domain !== 'all' && item.domain !== domain) return false;
+
+                // Sensitivity filter
+                if (sensitivity === 'restricted' && !item.hasPII) return false;
+                if (sensitivity === 'public' && item.hasPII) return false;
+
+                // Certification filter
+                if (certification === 'certified' && !item.certified) return false;
+                if (certification === 'pending' && item.certified) return false;
+
+                return true;
+            });
+
+            renderResults();
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            document.getElementById('searchTerm').textContent = e.target.value;
+        });
+
+        document.getElementById('qualityFilter').addEventListener('change', applyFilters);
+        document.getElementById('domainFilter').addEventListener('change', applyFilters);
+        document.getElementById('sensitivityFilter').addEventListener('change', applyFilters);
+        document.getElementById('certificationFilter').addEventListener('change', applyFilters);
+
+        // Close modal on background click
+        document.getElementById('previewModal').addEventListener('click', (e) => {
+            if (e.target.id === 'previewModal') {
+                closePreview();
+            }
+        });
+
+        // Initial render
+        renderResults();
+    </script>
+</body>
+</html>
